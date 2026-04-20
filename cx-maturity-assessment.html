@@ -4225,34 +4225,40 @@
 
             const dimensionQuestions = {};
             for (let dim = 1; dim <= 7; dim++) {
-                dimensionQuestions[dim] = [];
+                dimensionQuestions[dim] = { correct: [], wrong: [] };
             }
 
             answers.forEach((answer, idx) => {
-                dimensionQuestions[answer.dimension].push({...answer, index: idx + 1});
+                const num = idx + 1;
+                if (answer.isCorrect) {
+                    dimensionQuestions[answer.dimension].correct.push(num);
+                } else {
+                    dimensionQuestions[answer.dimension].wrong.push(num);
+                }
             });
 
             for (let dim = 1; dim <= 7; dim++) {
-                if (dimensionQuestions[dim].length === 0) continue;
+                const data = dimensionQuestions[dim];
+                if (data.correct.length === 0 && data.wrong.length === 0) continue;
 
+                const total = data.correct.length + data.wrong.length;
                 const sectionDiv = document.createElement('div');
                 sectionDiv.className = 'dimension-section';
-                sectionDiv.innerHTML = `<div class="dimension-section-title">${dimensions[dim]}</div>`;
-
-                dimensionQuestions[dim].forEach(answer => {
-                    const questionDiv = document.createElement('div');
-                    questionDiv.className = `report-question ${answer.isCorrect ? 'correct' : 'wrong'}`;
-                    questionDiv.innerHTML = `
-                        <div class="report-question-text">السؤال ${answer.index}: ${answer.question}</div>
-                        <div class="report-answer ${answer.isCorrect ? 'correct' : 'wrong'}">
-                            <span class="report-answer-icon">${answer.isCorrect ? '✓' : '✗'}</span>
-                            <span>إجابتك: <strong>${answer.selected}</strong></span>
-                        </div>
-                        ${!answer.isCorrect ? `<div class="report-answer" style="color: #059669;">الإجابة الصحيحة: <strong>${answer.correct}</strong></div>` : ''}
-                    `;
-                    sectionDiv.appendChild(questionDiv);
-                });
-
+                sectionDiv.innerHTML = `
+                    <div class="dimension-section-title">${dimensions[dim]} <span style="font-size:13px; color:#64748b; font-weight:400;">(${data.correct.length}/${total})</span></div>
+                    <div style="display:flex; flex-direction:column; gap:10px; padding:10px 0;">
+                        ${data.correct.length > 0 ? `
+                        <div style="display:flex; align-items:flex-start; gap:10px; direction:rtl;">
+                            <span style="background:#dcfce7; color:#16a34a; padding:4px 12px; border-radius:8px; font-weight:600; font-size:13px; white-space:nowrap;">✓ صحيحة</span>
+                            <span style="color:#16a34a; font-size:14px; line-height:1.8;">${data.correct.join(' ، ')}</span>
+                        </div>` : ''}
+                        ${data.wrong.length > 0 ? `
+                        <div style="display:flex; align-items:flex-start; gap:10px; direction:rtl;">
+                            <span style="background:#fef2f2; color:#dc2626; padding:4px 12px; border-radius:8px; font-weight:600; font-size:13px; white-space:nowrap;">✗ خاطئة</span>
+                            <span style="color:#dc2626; font-size:14px; line-height:1.8;">${data.wrong.join(' ، ')}</span>
+                        </div>` : ''}
+                    </div>
+                `;
                 reportContent.appendChild(sectionDiv);
             }
         }
